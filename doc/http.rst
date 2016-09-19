@@ -51,17 +51,17 @@ either be a valid connection to the bus or, if the bus is not enabled,
 ``None``.
 
 When referencing a function handler as a controller use the full package path
-to the function If the function is ``hello_world`` and it lives under
+to the function. If the function is ``hello_world`` and it lives under
 ``commissaire_http.handlers`` then the controller would be
 ``commissaire_http.handlers.hello_world``.
 
 The following example would show the user ``{"Hello": "there"}`` or
-``{"Hello", "{{ name }}"}`` depending parameters. Remember, the return of
+``{"Hello", "{{ name }}"}`` depending on parameters. Remember, the return of
 the handler must be a valid jsonrpc message as well!
 
 .. note::
 
-    The ``method`` in the incoming jsonrpc message is hikjacked and filled
+    The ``method`` in the incoming jsonrpc message is hijacked and filled
     with the HTTP method that was used to call the handler.
 
 .. code-block:: python
@@ -96,7 +96,7 @@ considered a handler it must start with an underscore.
 One major difference between a class handler and function handler is that class
 handlers are instantiated when they are loaded!
 
-When referencing a class handler as a controller use the full package path
+When referencing a class handler as a controller, use the full package path
 to the class and the method. If the class is ``ClassHandlerExample``,
 the method is ``hello``, and it lives under ``commissaire_http.handlers``
 then the controller would be
