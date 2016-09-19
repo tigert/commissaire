@@ -3,7 +3,7 @@ Commissaire Services
 
 Commissaire Service is a framework for writing long running services for the
 Commissaire management system. It provides a standard way to connect to
-Commissaire's bus and provide/consume services.
+Commissaire's message bus and provide/consume services.
 
 Example Use Cases
 -----------------
@@ -16,14 +16,15 @@ connect to and bootstrap new hosts wanting to be managed by Commissaire.
 
 Commissaire Watcher
 ```````````````````
-Commissaire's ``Watcher`` is a set of long running processes which
-connect to hosts that have already been bootstrapped and checks their status.
+Commissaire's ``Watcher`` is a set of long running processes which periodically
+connects to hosts that have already been bootstrapped and checks their status.
 
 
 Commissaire Storage
 ```````````````````
-Commissaire's ``Storage`` is a set of long running processes which handle
-persisting data to a data store.
+Commissaire's ``Storage`` is a set of long running processes which broker storage
+and retrieval requests of persistent data.
+
 
 Writing a Service
 -----------------
@@ -32,7 +33,7 @@ High Level
 ----------
 
 * Subclass ``commissaire_service.service.CommissaireService``
-* Define all ``on_{{ method }}`` methods to exposed them on the bus
+* Define all ``on_{{ method }}`` methods to exposed them on the message bus
 * Define how to run the service (Directly or via a ServiceManager)
 
 Specifics
@@ -65,10 +66,10 @@ define a method on your service called ``on_ping``. ``on_{{ method }}``'s
 expect to take 1 or more arguments where the 1 required argument is ``message``
 which is the message itself in the case the method needs extra information.
 
-To return results back to the caller via the bus simply use the ``return``
+To return results back to the caller via the message bus simply use the ``return``
 statement as if it was a normal method. If there is an error ``raise`` the
 proper exception. These will be transformed into proper messages and returned
-to the bus and passed to the caller.
+to the message bus and passed to the caller.
 
 .. note::
 
