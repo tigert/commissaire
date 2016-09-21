@@ -6,14 +6,7 @@
      "listen-port": 8000,
      "tls-certfile": "/path/to/server.crt",
      "tls-keyfile": "/path/to/server.key",
-     "register-store-handler": [
-       {
-         "name": "commissaire.store.kubestorehandler",
-         "server_url": "https://192.168.152.101:8080",
-         "certificate_path": "/path/to/kube_clientside.crt",
-         "certificate_key_path": "/path/to/kube_clientside.key",
-         "models": ["*"]
-       },
+     "storage-handlers": [
        {
          "name": "commissaire.store.etcdstorehandler",
          "server_url": "https://192.168.152.100:2379",

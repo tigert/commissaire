@@ -5,12 +5,7 @@
    {
      "listen-interface": "127.0.0.1",
      "listen-port": 8000,
-     "register-store-handler": [
-       {
-         "name": "commissaire.store.kubestorehandler",
-         "server_url": "http://192.168.152.102:8080",
-         "models": ["*"]
-       },
+     "storage-handlers": [
        {
          "name": "commissaire.store.etcdstorehandler",
          "server_url": "http://192.168.152.101:2379",
