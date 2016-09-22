@@ -4,8 +4,7 @@
    {
      ...
      "storage-handlers": [
-       "name": "commissaire.store.kubestorehandler",
+       "name": "commissaire.storage.etcd",
        ...
-       "token": "$KUBERNETES_ACCESS_TOKEN"
      ]
    }

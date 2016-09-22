@@ -46,7 +46,7 @@ class Test_ConfigFile(TestCase):
         # Check handling of storage-handler.
         data = {
             'storage-handlers': [
-                {'name': 'commissaire.store.etcdstorehandler'},
+                {'name': 'commissaire.storage.etcd'},
             ],
         }
         with mock.patch('builtins.open',
@@ -71,7 +71,7 @@ class Test_ConfigFile(TestCase):
         """
         data = {
             'storage-handlers': {
-                'name': 'commissaire.store.etcdstorehandler',
+                'name': 'commissaire.storage.etcd',
             }
         }
         with mock.patch('builtins.open',

@@ -7,7 +7,7 @@
      "listen-port": 8000,
      "storage-handlers": [
        {
-         "name": "commissaire.store.etcdstorehandler",
+         "name": "commissaire.storage.etcd",
          "server_url": "http://192.168.152.101:2379",
          "models": []
        }

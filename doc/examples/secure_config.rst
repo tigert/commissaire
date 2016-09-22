@@ -8,7 +8,7 @@
      "tls-keyfile": "/path/to/server.key",
      "storage-handlers": [
        {
-         "name": "commissaire.store.etcdstorehandler",
+         "name": "commissaire.storage.etcd",
          "server_url": "https://192.168.152.100:2379",
          "certificate_path": "/path/to/etcd_clientside.crt",
          "certificate_key_path": "/path/to/etcd_clientside.key",
