@@ -106,7 +106,7 @@ class BusMixin:
 
         if 'error' in payload.keys():
             self.logger.warn(
-                'Error returned from the message id "{}"'.format(
+                'Error returned from the messageid: {} payload: "{}"'.format(
                     id, payload))
 
         self.logger.debug(
