@@ -7,7 +7,7 @@ Submodules
 .. toctree::
 
    commissaire_http.server.cli
-   commissaire_http.server.routes
+   commissaire_http.server.routing
 
 Module contents
 ---------------
