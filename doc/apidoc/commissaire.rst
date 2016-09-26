@@ -6,8 +6,8 @@ Subpackages
 
 .. toctree::
 
-    commissaire.config
     commissaire.bus
+    commissaire.config
     commissaire.containermgr
     commissaire.models
     commissaire.storage

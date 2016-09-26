@@ -6,6 +6,7 @@
      "listen-port": 8000,
      "tls-certfile": "/path/to/server.crt",
      "tls-keyfile": "/path/to/server.key",
+     "bus-uri": "redis://127.0.0.1:6379/",
      "storage-handlers": [
        {
          "name": "commissaire.storage.etcd",
