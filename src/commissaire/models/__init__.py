@@ -150,7 +150,7 @@ class Model(object):
         """
         Returns a JSON representation of this model.
 
-        :param secure: If the structure needs to respect _hidden_attributes.
+        :param secure: Include _hidden attributes in the return value.
         :type secure: bool
         :returns: The JSON representation.
         :rtype: str
@@ -164,7 +164,7 @@ class Model(object):
         Returns a dict representation of this model. This is different than
         using __dict__ as the returned data will be model specific only.
 
-        :param secure: If the structure needs to respect _hidden_attributes.
+        :param secure: Include _hidden attributes in the return value.
         :type secure: bool
         :returns: the dict representation.
         :rtype: dict
