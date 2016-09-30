@@ -159,6 +159,20 @@ class Model(object):
             self._struct_for_json(secure=secure),
             default=lambda o: o._struct_for_json(secure=secure))
 
+    def to_dict(self, secure=False):
+        """
+        Returns a dict representation of this model. This is different than
+        using __dict__ as the returned data will be model specific only.
+
+        :param secure: If the structure needs to respect _hidden_attributes.
+        :type secure: bool
+        :returns: the dict representation.
+        :rtype: dict
+        """
+        # Instead of reimplementing the logic take the performance hit of
+        # of going between native and json
+        return json.loads(self.to_json(secure))
+
     def _validate(self):
         """
         Validates the attribute data of the current instance.
