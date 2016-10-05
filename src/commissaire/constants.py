@@ -60,5 +60,5 @@ JSONRPC_ERRORS = {
     'INVALID_PARAMETERS': -32602,
     'INTERNAL_ERROR': -32603,
     # Custom codes
-    'CONFLICT': -32049,
+    'CONFLICT': 409,
 }
