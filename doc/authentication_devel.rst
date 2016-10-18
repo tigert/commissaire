@@ -28,7 +28,7 @@ Basic
 
     from commissaire_http.authentication import Authenticator
 
-    class AllwaysAllowOnSSL(Authenticator):
+    class AlwaysAllowOnSSL(Authenticator):
         """
         Example: Allows anyone if they use https.
         """
@@ -48,8 +48,8 @@ Basic
                 return True
             return False
 
-    #: Alias AllwaysAllowOnSSL
-    AuthenticationPlugin = AllwaysAllowOnSSL
+    #: Alias AlwaysAllowOnSSL
+    AuthenticationPlugin = AlwaysAllowOnSSL
 
 
 Real Code
