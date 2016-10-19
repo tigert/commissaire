@@ -153,3 +153,28 @@ class BusMixin:
                 error_data.get('data', {}))
 
         return payload
+
+    def notify(self, routing_key, params={}):
+        """
+        Sends a notification to a topic.
+
+        :param routing_key: The routing key to publish on.
+        :type routing_key: str
+        """
+        method = routing_key.split('.')[-1]
+
+        jsonrpc_msg = {
+            'jsonrpc': '2.0',
+            'method': method,
+            'params': params,
+        }
+        self.logger.debug(
+            'jsonrpc notification for id: {}"'.format(jsonrpc_msg))
+
+        self.producer.publish(
+            jsonrpc_msg,
+            routing_key,
+            declare=[self._exchange])
+
+        self.logger.debug(
+            'Sent notification to topic "{}".'.format(routing_key))
