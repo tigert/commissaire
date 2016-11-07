@@ -41,7 +41,7 @@ Vagrant.configure(2) do |config|
         echo "==> Setting hostname"
         sudo hostnamectl set-hostname kubernetes
         echo "===> Updating the system"
-        #sudo dnf update --setopt=tsflags=nodocs -y
+        sudo dnf update --setopt=tsflags=nodocs -y
         echo "===> Installing kubernetes"
         sudo dnf install -y kubernetes-master.x86_64
         echo "===> Configuring kubernetes"
@@ -106,7 +106,7 @@ Vagrant.configure(2) do |config|
       echo "==> Setting hostname"
       sudo hostnamectl set-hostname commissaire
       echo "===> Updating the system"
-      #sudo dnf update -y
+      sudo dnf update -y
       echo "===> Installing OS dependencies"
       sudo dnf install -y --setopt=tsflags=nodocs rsync openssh-clients redhat-rpm-config python3-virtualenv gcc libffi-devel openssl-devel git nfs-utils
       echo "===> Setting up virtualenv"
@@ -130,34 +130,35 @@ Vagrant.configure(2) do |config|
       sudo sed -i 's|"bus-uri": "redis://127.0.0.1:6379/"|"bus-uri": "redis://192.168.152.101:6379/"|g' /etc/commissaire/commissaire.conf
       sudo sed -i 's|^ExecStart=.*|ExecStart=/bin/bash -c ". /home/vagrant/commissaire_env/bin/activate \\&\\& commissaire-server -c /etc/commissaire/commissaire.conf"|' /etc/systemd/system/commissaire-server.service
       sudo sed -i 's|Type=simple|\&\\nWorkingDirectory=/vagrant|' /etc/systemd/system/commissaire-server.service
-      echo "===> Starting commissaire-server"
-      sudo systemctl daemon-reload
-      sudo systemctl enable commissaire-server
-      sudo systemctl start commissaire-server
 
       echo "===> Setting up commissaire-storage service to autostart"
       sudo cp /vagrant/commissaire-service/conf/storage.conf /etc/commissaire/storage.conf
       sudo cp /vagrant/commissaire-service/conf/systemd/commissaire-storage.service /etc/systemd/system/commissaire-storage.service
       sudo sed -i 's|"server_url": "http://127.0.0.1:2379"|"server_url": "http://192.168.152.101:2379"|g' /etc/commissaire/storage.conf
       sudo sed -i 's|^ExecStart=.*|ExecStart=/bin/bash -c ". /home/vagrant/commissaire_env/bin/activate \\&\\& commissaire-storage-service -c /etc/commissaire/storage.conf"|' /etc/systemd/system/commissaire-storage.service
-      echo "===> Starting commissaire-storage service"
-      sudo systemctl daemon-reload
-      sudo systemctl enable commissaire-storage
-      sudo systemctl start commissaire-storage
 
       echo "===> Setting up commissaire-investogater-service to autostart"
       sudo cp /vagrant/commissaire-service/conf/systemd/commissaire-investigator.service /etc/systemd/system/commissaire-investigator.service
       sudo sed -i 's|^ExecStart=.*|ExecStart=/bin/bash -c ". /home/vagrant/commissaire_env/bin/activate \\&\\& commissaire-investigator-service -c /etc/commissaire/investigator.conf"|' /etc/systemd/system/commissaire-investigator.service
-      echo "===> Starting commissaire-investigator"
-      sudo systemctl daemon-reload
-      sudo systemctl enable commissaire-investigator
-      sudo systemctl start commissaire-investigator
 
       echo "===> Setting up commissaire-watcher service to autostart"
       sudo cp /vagrant/commissaire-service/conf/systemd/commissaire-watcher.service /etc/systemd/system/commissaire-watcher.service
       sudo sed -i 's|^ExecStart=.*|ExecStart=/bin/bash -c ". /home/vagrant/commissaire_env/bin/activate \\&\\& commissaire-watcher-service -c /etc/commissaire/watcher.conf"|' /etc/systemd/system/commissaire-watcher.service
-      echo "===> Starting commissaire-watcher service"
+
+      echo "===> Starting commissaire-server"
       sudo systemctl daemon-reload
+      sudo systemctl enable commissaire-server
+      sudo systemctl start commissaire-server
+
+      echo "===> Starting commissaire-storage service"
+      sudo systemctl enable commissaire-storage
+      sudo systemctl start commissaire-storage
+
+      echo "===> Starting commissaire-investigator"
+      sudo systemctl enable commissaire-investigator
+      sudo systemctl start commissaire-investigator
+
+      echo "===> Starting commissaire-watcher service"
       sudo systemctl enable commissaire-watcher
       sudo systemctl start commissaire-watcher
     SHELL

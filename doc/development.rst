@@ -30,7 +30,7 @@ Vagrant
 A ``Vagrantfile`` is provided which will give you a full local development setup.
 
 To run the vagrant development environment make sure you have a supported
-virtualization system, vagrant installed, and have all commissaire project checked
+virtualization system, vagrant installed, and have all commissaire projects checked
 out in the parent folder as the commissaire vagrant box will attempt to mount them
 over NFS.
 
