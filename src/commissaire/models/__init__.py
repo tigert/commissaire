@@ -368,7 +368,7 @@ class ClusterDeploy(Model):
         if self.version in ('', None):
             errors.append('version must be a non empty string')
         if self.name in ('', None):
-            errors.append('version must be a non empty string')
+            errors.append('name must be a non empty string')
         super()._validate(errors)
 
 
