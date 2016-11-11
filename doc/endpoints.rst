@@ -29,6 +29,7 @@ Retrieve the status of the cluster.
        "status" string,
        "network": string,
        "type": string,
+       "cluster_manager": str,
        "hosts": {
            "total": int,
            "available": int,
@@ -47,6 +48,7 @@ Example
        "status": "ok",
        "network": "default",
        "type": "kubernetes",
+       "cluster_manager": "prod_openshift",
        "hosts": {
            "total": 3,
            "available": 2,
@@ -66,6 +68,7 @@ Creates a new cluster.
 
     {
         "type": enum(string), // The cluster type
+        "cluster_manager": string // (Optional) Name of the cluster manager to use
         "network": string     // The name of the network
     }
 
@@ -411,6 +414,117 @@ Example
    [
       "mycluster",
    ]
+
+
+.. _container_manager_configs_op:
+
+ContainerManagers
+-----------------
+**Endpoint**: /api/v0/containermanagers/
+
+(Internal model name: ``ContainerManagerConfig``)
+
+GET
+```
+Retrieve a list of all configured ContainerManagers.
+
+.. code-block:: javascript
+
+   [
+       string,...
+   ]
+
+
+Example
+~~~~~~~
+
+.. code-block:: javascript
+
+   [
+      "prod_openshift",
+   ]
+
+
+.. _container_manager_config_op:
+
+ContainerManagerConfig
+----------------------
+
+**Endpoint**: /api/v0/containermanager/{name}
+
+(Internal model name: ``ContainerManagerConfig``)
+
+GET
+```
+Retrieve a specific ContainerManagerConfig record.
+
+.. code-block:: javascript
+
+  {
+      "name": string,        // The name of the ContainerManagerConfig
+      "type":  enum(string), // The type of the ContainerManagerConfig
+      "options": dict        // Options to configure a ContainerManagerConfig
+  }
+
+.. note::
+
+   See :ref:`container_manager_types` for a list and description of ContainerManager types.
+
+
+Example
+~~~~~~~
+
+.. code-block:: javascript
+
+  {
+      "name": "prod_openshift",
+      "type": "openshift",
+      "options": {
+          "apiserver": "https://192.168.152.101:8080/api/"
+      },
+  }
+
+PUT
+```
+Creates a new ContainerManagerConfig record.
+
+
+.. code-block:: javascript
+
+  {
+      "type":  enum(string), // The type of the ContainerManagerConfig
+      "options": dict        // Options to explain a ContainerManagerConfig
+  }
+
+.. note::
+
+   See :ref:`container_manager_types` for a list and description of ContainerManager types.
+
+
+Example
+~~~~~~~
+
+.. code-block:: javascript
+
+  {
+      "type": "openshift",
+      "options": {
+          "apiserver": "https://192.168.152.101:8080/api/"
+      },
+  }
+
+DELETE
+``````
+Deletes a ContainerManagerConfig record. (Idempotent)
+
+No body.
+
+Example Response
+~~~~~~~~~~~~~~~~
+
+.. code-block:: javascript
+
+   []
 
 
 .. _host_op:

@@ -58,3 +58,11 @@ Cluster Types
 
 * **kubernetes**: A cluster with a Kubernetes compatible API.
 * **host_only**: A cluster for only managing hosts.
+
+
+.. _container_manager_types:
+
+ContainerManager Types
+~~~~~~~~~~~~~~~~~~~~~~
+
+* **openshift**: A cluster with an OpenShift compatible API.
