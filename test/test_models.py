@@ -101,6 +101,7 @@ class _TypeValidationTest(TestCase):
             instance._validate,
         )
 
+
 class TestClusterModel(_TypeValidationTest):
     """
     Extra tests for the Cluster model.
@@ -115,3 +116,11 @@ class TestNetworkModel(_TypeValidationTest):
     """
     model = models.Network
     valid_types = C.NETWORK_TYPES
+
+
+class TestContainerManagerModel(_TypeValidationTest):
+    """
+    Extra tests for the ContainerManagerConfig model.
+    """
+    model = models.ContainerManagerConfig
+    valid_types = C.CONTAINER_MANAGER_TYPES
