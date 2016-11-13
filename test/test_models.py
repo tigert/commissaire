@@ -121,14 +121,6 @@ class _TypeValidationTest(TestCase):
         )
 
 
-class TestClusterModel(_TypeValidationTest):
-    """
-    Extra tests for the Cluster model.
-    """
-    model = models.Cluster
-    valid_types = C.CLUSTER_TYPES
-
-
 class TestNetworkModel(_TypeValidationTest):
     """
     Extra tests for the Network model.

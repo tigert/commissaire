@@ -293,15 +293,15 @@ class Cluster(Model):
     _attribute_map = {
         'name': {'type': str},
         'status': {'type': str},
-        'type': {'type': str},
         'network': {'type': str},
         'hostset': {'type': list},
         'container_manager': {'type': str},
     }
     _hidden_attributes = ('hostset',)
     _attribute_defaults = {
-        'name': '', 'type': C.CLUSTER_TYPE_DEFAULT,
-        'status': '', 'hostset': [],
+        'name': '',
+        'status': '',
+        'hostset': [],
         'network': C.DEFAULT_CLUSTER_NETWORK_JSON['name'],
         'container_manager': '',
     }
@@ -339,14 +339,6 @@ class Cluster(Model):
         # Instead of reimplementing the logic take the performance hit of
         # of going between native and json
         return json.loads(self.to_json_with_hosts(secure))
-
-    def _validate(self):
-        errors = []
-        if self.type not in C.CLUSTER_TYPES:
-            errors.append(
-                'Cluster type must be one of the following: {}'.format(
-                    ', '.join(C.CLUSTER_TYPES)))
-        super()._validate(errors)
 
 
 class ClusterDeploy(Model):

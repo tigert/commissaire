@@ -18,6 +18,10 @@ Cluster
 
 (Internal model name: ``Cluster``)
 
+.. versionchanged:: 0.1.0
+
+   ``type`` has been removed in favor of ``cluster_manager``.
+
 GET
 ```
 Retrieve the status of the cluster.
@@ -28,7 +32,6 @@ Retrieve the status of the cluster.
        "name": string,
        "status" string,
        "network": string,
-       "type": string,
        "cluster_manager": str,
        "hosts": {
            "total": int,
@@ -47,7 +50,6 @@ Example
        "name": "mycluster",
        "status": "ok",
        "network": "default",
-       "type": "kubernetes",
        "cluster_manager": "prod_openshift",
        "hosts": {
            "total": 3,
@@ -67,14 +69,9 @@ Creates a new cluster.
 .. code-block:: javascript
 
     {
-        "type": enum(string), // The cluster type
         "cluster_manager": string // (Optional) Name of the cluster manager to use
         "network": string     // The name of the network
     }
-
-.. note::
-
-   See :ref:`cluster_types` for a list and description of cluster types.
 
 
 Example
@@ -83,7 +80,7 @@ Example
 .. code-block:: javascript
 
    {
-       "type": "kubernetes",
+       "cluster_manager": "prod_openshift",
        "network": "default"
    }
 
