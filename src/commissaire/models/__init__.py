@@ -569,3 +569,16 @@ class ContainerManagerConfig(Model):
                 'ContainerManager type must be one of the '
                 'following: {}'.format(', '.join(C.CONTAINER_MANAGER_TYPES)))
         super()._validate(errors)
+
+
+class ContainerManagerConfigs(Model):
+    """
+    Representation of a group of one or more ContainerManagers.
+    """
+    _json_type = list
+    _attribute_map = {
+        'container_managers': {'type': list},
+    }
+    _attribute_defaults = {'container_managers': []}
+    _list_attr = 'container_managers'
+    _list_class = ContainerManagerConfig
