@@ -489,6 +489,7 @@ Creates a new ContainerManagerConfig record.
 .. code-block:: javascript
 
   {
+      "name": str,           // Name of the ContainerManagerConfig
       "type":  enum(string), // The type of the ContainerManagerConfig
       "options": dict        // Options to explain a ContainerManagerConfig
   }

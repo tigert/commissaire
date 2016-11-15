@@ -244,8 +244,7 @@ class Network(Model):
 
     .. note::
 
-       This model is similar to ContainerManagerConfig. The options
-       attribute holds configuration items used to define network options.
+       This model is similar to ContainerManagerConfig.
     """
     _json_type = dict
     _attribute_map = {
