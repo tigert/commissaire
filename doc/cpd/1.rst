@@ -66,9 +66,9 @@ References             Name          Any helpful external links.
 CPD Status
 ~~~~~~~~~~
 The status of a CPD will be changed to Accepted if and when 75% or more of the
-active core development team gives the CPD a ``:+1:``. It is the job of the current
-development lead (or a development lead) to update the CPD to Accepted status
-and note it is accepted in the related issue(s).
+active core development team gives the CPD a ``:+1:``. It is the job of at least
+one of the development leads to update the CPD to Accepted status and note it is
+accepted in the related issue(s).
 
 Checklist
 ---------
