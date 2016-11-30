@@ -34,7 +34,7 @@ Name         Description
 address      IP address or hostname of the ``Host``
 status       Status of the host. Decided within Commissaire itself.
 os           The Operating System the ``Host`` utlizes.
-cpus         Number of CPU's on the ``Host``
+cpus         Number of CPU's in the ``Host``
 memory       Amount of memory the ``Host`` has at it's disposal.
 space        Amount of storage the ``Host`` has at it's disposal.
 last_check   The last time the host was checked by ``Watcher``. Set by Commissaire itself.
