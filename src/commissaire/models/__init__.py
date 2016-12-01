@@ -481,11 +481,12 @@ class Host(Model):
         'last_check': {'type': str},
         'ssh_priv_key': {'type': str},
         'remote_user': {'type': str},
+        'source': {'type': str},
     }
     _attribute_defaults = {
         'address': '', 'status': '', 'os': '', 'cpus': 0,
         'memory': 0, 'space': 0, 'last_check': '', 'ssh_priv_key': '',
-        'remote_user': 'root'}
+        'remote_user': 'root', 'source': ''}
     _hidden_attributes = ('ssh_priv_key', 'remote_user')
     _primary_key = 'address'
 
