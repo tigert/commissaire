@@ -106,9 +106,9 @@ class Model(object):
         :rtype: str
         """
         readable = '<{}'.format(self.__class__.__name__)
-        for k, v in self.to_dict().items():
-            readable += ' {}={}'.format(k, v)
-        return readable + '>'
+        for k, v in self.to_dict_safe().items():
+            readable += ' {}={},'.format(k, v or '<Empty>')
+        return readable + '...>'
 
     @property
     def primary_key(self):  # pragma: no cover
