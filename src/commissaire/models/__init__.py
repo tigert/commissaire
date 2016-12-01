@@ -114,6 +114,9 @@ class Model(object):
     def primary_key(self):  # pragma: no cover
         """
         Shortcut property to get the value of the primary key.
+
+        :returns: The primary key value.
+        :rtype: mixed
         """
         return getattr(self, self._primary_key)
 
