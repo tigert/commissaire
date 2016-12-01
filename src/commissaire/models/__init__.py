@@ -98,6 +98,18 @@ class Model(object):
         instance.__init__(**init_args)
         return instance
 
+    def __str__(self):  # pragma: no cover
+        """
+        Returns a string representation of the instance.
+
+        :returns: String representation of this instance.
+        :rtype: str
+        """
+        readable = '<{}'.format(self.__class__.__name__)
+        for k, v in self.to_dict().items():
+            readable += ' {}={}'.format(k, v)
+        return readable + '>'
+
     @property
     def primary_key(self):  # pragma: no cover
         """
