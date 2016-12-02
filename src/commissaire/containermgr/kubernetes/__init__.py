@@ -18,9 +18,10 @@ The kubernetes container manager package.
 
 import requests
 
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse
 
 from commissaire.containermgr import ContainerManagerBase
+from commissaire.util.config import ConfigurationError
 
 
 class ContainerManager(ContainerManagerBase):
@@ -60,6 +61,37 @@ class ContainerManager(ContainerManagerBase):
             self.base_uri))
         self.logger.debug(
             'Kubernetes Container Manager: {}'.format(self.__dict__))
+
+    @classmethod
+    def check_config(cls, config):
+        """
+        Examines the configuration parameters for an ContainerManager
+        and throws a ConfigurationError if any parameters are invalid.
+
+        :param cls: ContainerManager class.
+        :type cls: class
+        :param config: Configuration dictionary to check.
+        :type config: dict
+        :returns: True if configuration is valid
+        :rtype: bool
+        :raises: commissaire.util.config.ConfigurationError
+        """
+        try:
+            url = urlparse(config['server_url'])
+        except KeyError:
+            raise ConfigurationError(
+                'server_url is a required configuration item')
+
+        if (bool(config.get('certificate_path')) ^
+                bool(config.get('certificate_key_path'))):
+            raise ConfigurationError(
+                'Both "certificate_path" and "certificate_key_path" '
+                'must be provided to use a client side certificate')
+        if config.get('certificate_path'):
+            if url.scheme != 'https':
+                raise ConfigurationError(
+                    'Server URL scheme must be "https" when using client '
+                    'side certificates (got "{}")'.format(url.scheme))
 
     def _get(self, part, *args, **kwargs):
         """
