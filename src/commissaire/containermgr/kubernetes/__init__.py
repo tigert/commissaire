@@ -20,7 +20,6 @@ import requests
 
 from urllib.parse import urljoin
 
-from commissaire import constants as C
 from commissaire.containermgr import ContainerManagerBase
 
 
@@ -28,8 +27,6 @@ class ContainerManager(ContainerManagerBase):
     """
     Kubernetes container manager implementation.
     """
-
-    cluster_type = C.CLUSTER_TYPE_KUBERNETES
 
     def __init__(self, config):
         """
@@ -39,29 +36,30 @@ class ContainerManager(ContainerManagerBase):
         :type config: dict
         """
         ContainerManagerBase.__init__(self, config)
+        self.__class__.check_config(config)
         self.con = requests.Session()
         token = config.get('token', None)
         if token:
-            self.con.headers["Authorization"] = "Bearer {0}".format(token)
+            self.con.headers['Authorization'] = 'Bearer {}'.format(token)
             self.logger.info('Using bearer token')
-            self.logger.debug('Bearer token: {0}'.format(token))
+            self.logger.debug('Bearer token: {}'.format(token))
 
         certificate_path = config.get('certificate_path')
         certificate_key_path = config.get('certificate_key_path')
         if certificate_path and certificate_key_path:
             self.con.cert = (certificate_path, certificate_key_path)
             self.logger.info(
-                'Using client side certificate. Certificate path: {0} '
-                'Certificate Key Path: {1}'.format(
+                'Using client side certificate. Certificate path: {} '
+                'Certificate Key Path: {}'.format(
                     certificate_path, certificate_key_path))
 
         # TODO: Verify TLS!!!
         self.con.verify = False
         self.base_uri = urljoin(config['server_url'], '/api/v1')
-        self.logger.info('Kubernetes Container Manager created: {0}'.format(
+        self.logger.info('Kubernetes Container Manager created: {}'.format(
             self.base_uri))
         self.logger.debug(
-            'Kubernetes Container Manager: {0}'.format(self.__dict__))
+            'Kubernetes Container Manager: {}'.format(self.__dict__))
 
     def _get(self, part, *args, **kwargs):
         """
@@ -79,12 +77,12 @@ class ContainerManager(ContainerManagerBase):
         if not part.startswith('/'):
             self.logger.debug(
                 'Part given without starting slash. Adding...')
-            part = '/{0}'.format(part)
+            part = '/{}'.format(part)
 
-        self.logger.debug('Executing GET for {0}'.format(part))
+        self.logger.debug('Executing GET for {}'.format(part))
         resp = self.con.get(
-            '{0}{1}'.format(self.base_uri, part), *args, **kwargs)
-        self.logger.debug('Response for {0}. Status: {1}'.format(
+            '{}{}'.format(self.base_uri, part), *args, **kwargs)
+        self.logger.debug('Response for {}. Status: {}'.format(
             part, resp.status_code))
         return resp
 
@@ -115,7 +113,7 @@ class ContainerManager(ContainerManagerBase):
         :returns: The response back from kubernetes.
         :rtype: requests.Response
         """
-        part = '/nodes/{0}'.format(address)
+        part = '/nodes/{}'.format(address)
         resp = self._get(part)
         data = resp.json()
         if raw:
