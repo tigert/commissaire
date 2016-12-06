@@ -16,6 +16,7 @@
 The kubernetes container manager package.
 """
 
+import json
 import requests
 
 from urllib.parse import urljoin, urlparse
@@ -125,6 +126,30 @@ class KubeContainerManager(ContainerManagerBase):
         self.logger.debug('Executing GET for {}'.format(part))
         resp = self.con.get(
             '{}{}'.format(self.base_uri, part), *args, **kwargs)
+        self.logger.debug('Response for {}. Status: {}'.format(
+            part, resp.status_code))
+        return resp
+
+    def _put(self, part, payload, *args, **kwargs):
+        """
+        Put data to the Kubernetes apiserver.
+
+        :param part: The URI part. EG: /nodes
+        :type part: str
+        ::param payload: Data to send with the PUT.
+        :type payload: dict
+        :param args: All other non-keyword arguments.
+        :type args: tuple
+        :param kwargs: All other keyword arguments.
+        :type kwargs: dict
+        :returns: requests.Response
+        """
+        part = self._fix_part(part)
+        payload = json.dumps(payload)
+        self.logger.debug('Executing PUT for {}. Payload={}'.format(
+            part, payload))
+        resp = self.con.put(
+            '{}{}'.format(self.base_uri, part), data=payload, *args, **kwargs)
         self.logger.debug('Response for {}. Status: {}'.format(
             part, resp.status_code))
         return resp

@@ -73,6 +73,17 @@ class TestKubeContainerManager(TestCase):
         self.instance.con.get.assert_called_once_with(
             CONTAINER_MGR_CONFIG['server_url'] + 'api/v1/test')
 
+    def test__put(self):
+        """
+        Verify _put makes proper HTTP requests.
+        """
+        expected = {'test': 'test'}
+        self.instance.con = mock.MagicMock()
+        self.instance._put('test', expected)
+        self.instance.con.put.assert_called_once_with(
+            CONTAINER_MGR_CONFIG['server_url'] + 'api/v1/test',
+            data=json.dumps(expected))
+
     def test_node_registered(self):
         """
         Verify node_registered makes the proper remote call and returns the proper result.
