@@ -73,16 +73,19 @@ class TestKubeContainerManager(TestCase):
         self.instance.con.get.assert_called_once_with(
             CONTAINER_MGR_CONFIG['server_url'] + 'api/v1/test')
 
-    def test__put(self):
+    def test__put_and__post(self):
         """
-        Verify _put makes proper HTTP requests.
+        Verify _put and _post makes proper HTTP requests.
         """
         expected = {'test': 'test'}
-        self.instance.con = mock.MagicMock()
-        self.instance._put('test', expected)
-        self.instance.con.put.assert_called_once_with(
-            CONTAINER_MGR_CONFIG['server_url'] + 'api/v1/test',
-            data=json.dumps(expected))
+        for method in ('put', 'post'):
+            self.instance.con = mock.MagicMock()
+            method_callable = getattr(self.instance, '_' + method)
+            method_callable('test', expected)
+            assertable_callable = getattr(self.instance.con, method)
+            assertable_callable.assert_called_once_with(
+                CONTAINER_MGR_CONFIG['server_url'] + 'api/v1/test',
+                data=json.dumps(expected))
 
     def test_node_registered(self):
         """
@@ -94,6 +97,19 @@ class TestKubeContainerManager(TestCase):
             self.assertEquals(result, self.instance.node_registered('test'))
             self.instance.con.get.assert_called_once_with(
                 CONTAINER_MGR_CONFIG['server_url'] + 'api/v1/nodes/test')
+
+    def test_register_node(self):
+        """
+        Verify register_node makes the proper remote call and returns the proper result.
+        """
+        for code, result in ((201, True), (404, False)):
+            self.instance.con = mock.MagicMock()
+            self.instance.con.post.return_value = mock.MagicMock(
+                status_code=code, text='')
+            self.assertEquals(result, self.instance.register_node('test'))
+            self.instance.con.post.assert_called_once_with(
+                CONTAINER_MGR_CONFIG['server_url'] + 'api/v1/nodes',
+                data=mock.ANY)
 
     def test_get_host_status(self):
         """

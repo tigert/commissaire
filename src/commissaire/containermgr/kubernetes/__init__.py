@@ -154,6 +154,57 @@ class KubeContainerManager(ContainerManagerBase):
             part, resp.status_code))
         return resp
 
+    def _post(self, part, payload, *args, **kwargs):
+        """
+        Post data to the Kubernetes apiserver.
+
+        :param part: The URI part. EG: /nodes
+        :type part: str
+        ::param payload: Data to send with the POST.
+        :type payload: dict
+        :param args: All other non-keyword arguments.
+        :type args: tuple
+        :param kwargs: All other keyword arguments.
+        :type kwargs: dict
+        :returns: requests.Response
+        """
+        part = self._fix_part(part)
+        payload = json.dumps(payload)
+        self.logger.debug('Executing POST for {}. Payload={}'.format(
+            part, payload))
+        resp = self.con.post(
+            '{}{}'.format(self.base_uri, part), data=payload, *args, **kwargs)
+        self.logger.debug('Response for {}. Status: {}'.format(
+            part, resp.status_code))
+        return resp
+
+    def register_node(self, name):
+        """
+        Registers a node to the Kubernetes Container Manager.
+
+        :param name: The name of the node.
+        :type name: str
+        :returns: True if registered, otherwise False
+        :rtype: bool
+        """
+        part = '/nodes'
+
+        payload = {
+            "kind": "Node",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": name,
+            }
+        }
+
+        resp = self._post(part, payload)
+        if resp.status_code == 201:
+            return True
+        self.logger.error(
+            'Non-created response when trying to register the node {}.'
+            'Status: {}, Data: {}'.format(name, resp.status_code, resp.text))
+        return False
+
     def node_registered(self, name):
         """
         Checks is a node was registered.
