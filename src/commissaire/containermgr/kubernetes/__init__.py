@@ -93,6 +93,22 @@ class KubeContainerManager(ContainerManagerBase):
                     'Server URL scheme must be "https" when using client '
                     'side certificates (got "{}")'.format(url.scheme))
 
+    def _fix_part(self, part):
+        """
+        Fixes part if it doesn't start with a slash.
+
+        :param part: The URI part. EG: /nodes
+        :type part: str
+        :returns: The part in the proper format.
+        :rtype: str
+        """
+        if not part.startswith('/'):
+            self.logger.debug(
+                'Part given without starting slash. Adding...')
+            part = '/{}'.format(part)
+
+        return part
+
     def _get(self, part, *args, **kwargs):
         """
         Get information from the Kubernetes apiserver.
@@ -105,12 +121,7 @@ class KubeContainerManager(ContainerManagerBase):
         :type kwargs: dict
         :returns: requests.Response
         """
-        # Fix part if it doesn't start with a slash
-        if not part.startswith('/'):
-            self.logger.debug(
-                'Part given without starting slash. Adding...')
-            part = '/{}'.format(part)
-
+        part = self._fix_part(part)
         self.logger.debug('Executing GET for {}'.format(part))
         resp = self.con.get(
             '{}{}'.format(self.base_uri, part), *args, **kwargs)

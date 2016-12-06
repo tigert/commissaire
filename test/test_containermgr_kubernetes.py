@@ -98,3 +98,19 @@ class TestKubeContainerManager(TestCase):
             self.instance.con.get.assert_called_with(
                 CONTAINER_MGR_CONFIG['server_url'] + 'api/v1/nodes/test')
 
+    def test__fix_part_with_valid_part(self):
+        """
+        Verify that when a valid part is given it is returned without modification.
+        """
+        expected = '/test'
+        self.assertEquals(
+            expected,
+            self.instance._fix_part(expected))
+
+    def test__fix_part_with_invalid_part(self):
+        """
+        Verify that when an invalid part it is fixed.
+        """
+        self.assertEquals(
+            '/test',
+            self.instance._fix_part('test'))
