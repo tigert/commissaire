@@ -24,7 +24,7 @@ from commissaire.containermgr import ContainerManagerBase
 from commissaire.util.config import ConfigurationError
 
 
-class ContainerManager(ContainerManagerBase):
+class KubeContainerManager(ContainerManagerBase):
     """
     Kubernetes container manager implementation.
     """
@@ -153,5 +153,5 @@ class ContainerManager(ContainerManagerBase):
         return (resp.status_code, data)
 
 
-#: Friendly name for the class
-KubeContainerManager = ContainerManager
+#: Common name for the class
+ContainerHandler = KubeContainerManager
