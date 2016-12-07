@@ -94,37 +94,76 @@ class TestKubeContainerManager(TestCase):
         """
         Verify node_registered makes the proper remote call and returns the proper result.
         """
-        for code, result in ((200, True), (404, False)):
-            self.instance.con = mock.MagicMock()
-            self.instance.con.get.return_value = mock.MagicMock(status_code=code)
-            self.assertEquals(result, self.instance.node_registered('test'))
-            self.instance.con.get.assert_called_once_with(
-                CONTAINER_MGR_CONFIG['server_url'] + 'api/v1/nodes/test')
+        self.instance.con = mock.MagicMock()
+        self.instance.con.get.return_value = mock.MagicMock(status_code=200)
+        self.assertEquals(True, self.instance.node_registered('test'))
+        self.instance.con.get.assert_called_once_with(
+            CONTAINER_MGR_CONFIG['server_url'] + 'api/v1/nodes/test')
+
+    def test_node_registered_when_node_is_not_registered(self):
+        """
+        Verify node_registered raises when the node is not registered.
+        """
+        self.instance.con = mock.MagicMock()
+        self.instance.con.get.return_value = mock.MagicMock(status_code=404)
+        self.assertRaises(
+            ContainerManagerError,
+            self.instance.node_registered,
+            'test')
+        self.instance.con.get.assert_called_once_with(
+            CONTAINER_MGR_CONFIG['server_url'] + 'api/v1/nodes/test')
 
     def test_register_node(self):
         """
         Verify register_node makes the proper remote call and returns the proper result.
         """
-        for code, result in ((201, True), (404, False)):
-            self.instance.con = mock.MagicMock()
-            self.instance.con.post.return_value = mock.MagicMock(
-                status_code=code, text='')
-            self.assertEquals(result, self.instance.register_node('test'))
-            self.instance.con.post.assert_called_once_with(
-                CONTAINER_MGR_CONFIG['server_url'] + 'api/v1/nodes',
-                data=mock.ANY)
+        self.instance.con = mock.MagicMock()
+        self.instance.con.post.return_value = mock.MagicMock(
+            status_code=201, text='')
+        self.assertEquals(True, self.instance.register_node('test'))
+        self.instance.con.post.assert_called_once_with(
+            CONTAINER_MGR_CONFIG['server_url'] + 'api/v1/nodes',
+            data=mock.ANY)
+
+    def test_register_node_when_registration_fails(self):
+        """
+        Verify register_node raises on registration failure.
+        """
+        self.instance.con = mock.MagicMock()
+        self.instance.con.post.return_value = mock.MagicMock(
+            status_code=500, text='')
+        self.assertRaises(
+            ContainerManagerError,
+            self.instance.register_node,
+            'test')
+        self.instance.con.post.assert_called_once_with(
+            CONTAINER_MGR_CONFIG['server_url'] + 'api/v1/nodes',
+            data=mock.ANY)
 
     def test_remove_node(self):
         """
         Verify remove_node makes the proper remote call and returns the proper result.
         """
-        for code, result in ((200, True), (404, False)):
-            self.instance.con = mock.MagicMock()
-            self.instance.con.delete.return_value = mock.MagicMock(
-                status_code=code)
-            self.assertEquals(result, self.instance.remove_node('test'))
-            self.instance.con.delete.assert_called_once_with(
-                CONTAINER_MGR_CONFIG['server_url'] + 'api/v1/nodes/test')
+        self.instance.con = mock.MagicMock()
+        self.instance.con.delete.return_value = mock.MagicMock(
+            status_code=200)
+        self.assertEquals(True, self.instance.remove_node('test'))
+        self.instance.con.delete.assert_called_once_with(
+            CONTAINER_MGR_CONFIG['server_url'] + 'api/v1/nodes/test')
+
+    def test_remove_node_when_removal_fails(self):
+        """
+        Verify remove_node raises when removal fails.
+        """
+        self.instance.con = mock.MagicMock()
+        self.instance.con.delete.return_value = mock.MagicMock(
+            status_code=404)
+        self.assertRaises(
+            ContainerManagerError,
+            self.instance.remove_node,
+            'test')
+        self.instance.con.delete.assert_called_once_with(
+            CONTAINER_MGR_CONFIG['server_url'] + 'api/v1/nodes/test')
 
     def test_get_node_status(self):
         """
@@ -139,6 +178,22 @@ class TestKubeContainerManager(TestCase):
             self.assertEquals(result, self.instance.get_node_status('test', raw))
             self.instance.con.get.assert_called_with(
                 CONTAINER_MGR_CONFIG['server_url'] + 'api/v1/nodes/test')
+
+    def test_get_node_status_on_failure(self):
+        """
+        Verify get_node_status raises when getting a status fails.
+        """
+        self.instance.con = mock.MagicMock()
+        resp = mock.MagicMock(json=mock.MagicMock(return_value=''))
+        self.instance.con.get.return_value = resp
+        self.instance.con.get().status_code = 500
+        self.assertRaises(
+            ContainerManagerError,
+            self.instance.get_node_status,
+            'test')
+        self.instance.con.get.assert_called_with(
+            CONTAINER_MGR_CONFIG['server_url'] + 'api/v1/nodes/test')
+
 
     def test__fix_part_with_valid_part(self):
         """
