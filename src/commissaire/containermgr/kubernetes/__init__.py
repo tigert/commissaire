@@ -168,11 +168,12 @@ class KubeContainerManager(ContainerManagerBase):
         :returns: requests.Response
         """
         part = self._fix_part(part)
-        payload = json.dumps(payload)
+        payload_str = json.dumps(payload)
         self.logger.debug('Executing PUT for {}. Payload={}'.format(
-            part, payload))
+            part, payload_str))
         resp = self.con.put(
-            '{}{}'.format(self.base_uri, part), data=payload, *args, **kwargs)
+            '{}{}'.format(self.base_uri, part),
+            data=payload_str, *args, **kwargs)
         self.logger.debug('Response for {}. Status: {}'.format(
             part, resp.status_code))
         return resp
