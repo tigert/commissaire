@@ -270,25 +270,30 @@ class KubeContainerManager(ContainerManagerBase):
             return True
         return False
 
-    def get_node_status(self, address, raw=False):
+    def get_node_status(self, name, raw=False):
         """
         Returns the node status.
 
-        :param address: The address of the host to check.
-        :type address: str
+        :param name: The name of the node.
+        :type name: str
         :param raw: If the result should be limited to its own status.
         :type raw: bool
         :returns: The response back from kubernetes.
         :rtype: requests.Response
+        :raises: commissaire.containermgr.ContainerManagerError
         """
-        part = '/nodes/{}'.format(address)
+        part = '/nodes/{}'.format(name)
         resp = self._get(part)
         if resp.status_code == 200:
             data = resp.json()
             if raw:
                 data = data['status']
             return data
-        return False
+        error_msg = (
+            'No status for {} returned. Status: {}'.format(
+                name, resp.status_code))
+        self.logger.error(error_msg)
+        raise ContainerManagerError(error_msg, resp.status_code)
 
 
 #: Common name for the class
