@@ -239,18 +239,20 @@ class KubeContainerManager(ContainerManagerBase):
 
         :param name: The name of the node.
         :type name: str
-        :returns: True if removed, otherwise False
+        :returns: True if removed
         :rtype: bool
+        :raises: commissaire.containermgr.ContainerManagerError
         """
         part = '/nodes/{}'.format(name)
 
         resp = self._delete(part)
         if resp.status_code == 200:
             return True
-        self.logger.error(
+        error_msg = (
             'Unexpected response when trying to remove the node {}.'
             'Status: {}, Data: {}'.format(name, resp.status_code, resp.text))
-        return False
+        self.logger.error(error_msg)
+        raise ContainerManagerError(error_msg, resp.status_code)
 
     def node_registered(self, name):
         """
