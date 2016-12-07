@@ -260,15 +260,19 @@ class KubeContainerManager(ContainerManagerBase):
 
         :param name: The name of the node.
         :type name: str
-        :returns: True if registered, otherwise False
+        :returns: True if registered
         :rtype: bool
+        :raises: commissaire.containermgr.ContainerManagerError
         """
         part = '/nodes/{0}'.format(name)
         resp = self._get(part)
         # TODO: Stronger checking would be better
         if resp.status_code == 200:
             return True
-        return False
+        error_msg = 'Node {} is not registered. Status: {}'.format(
+            name, resp.status_code)
+        self.logger.error(error_msg)
+        raise ContainerManagerError(error_msg, resp.status_code)
 
     def get_node_status(self, name, raw=False):
         """
