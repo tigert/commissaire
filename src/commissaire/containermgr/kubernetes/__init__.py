@@ -21,7 +21,8 @@ import requests
 
 from urllib.parse import urljoin, urlparse
 
-from commissaire.containermgr import ContainerManagerBase
+from commissaire.containermgr import (
+    ContainerManagerBase, ContainerManagerError)
 from commissaire.util.config import ConfigurationError
 
 
@@ -96,7 +97,7 @@ class KubeContainerManager(ContainerManagerBase):
 
     def _fix_part(self, part):
         """
-        Fixes part if it doesn't start with a slash.
+        Ensures the URI part starts with a slash.
 
         :param part: The URI part. EG: /nodes
         :type part: str
