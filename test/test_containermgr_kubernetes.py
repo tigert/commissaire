@@ -22,7 +22,7 @@ from unittest import mock
 
 from . import TestCase, mock
 
-from commissaire.containermgr import kubernetes
+from commissaire.containermgr import ContainerManagerError, kubernetes
 from commissaire.util.config import ConfigurationError
 
 
