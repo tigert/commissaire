@@ -126,9 +126,9 @@ class TestKubeContainerManager(TestCase):
             self.instance.con.delete.assert_called_once_with(
                 CONTAINER_MGR_CONFIG['server_url'] + 'api/v1/nodes/test')
 
-    def test_get_host_status(self):
+    def test_get_node_status(self):
         """
-        Verify get_host_status makes the proper remote call.
+        Verify get_node_status makes the proper remote call.
         """
         data = {'data': 'data', 'status': 'status'}
         for raw, result in ((True, 'status'), (False, data)):
@@ -136,7 +136,7 @@ class TestKubeContainerManager(TestCase):
             resp = mock.MagicMock(json=mock.MagicMock(return_value=data))
             self.instance.con.get.return_value = resp
             self.instance.con.get().status_code = 200
-            self.assertEquals((200, result), self.instance.get_host_status('test', raw))
+            self.assertEquals(result, self.instance.get_node_status('test', raw))
             self.instance.con.get.assert_called_with(
                 CONTAINER_MGR_CONFIG['server_url'] + 'api/v1/nodes/test')
 
