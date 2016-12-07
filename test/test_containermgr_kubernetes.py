@@ -64,14 +64,17 @@ class TestKubeContainerManager(TestCase):
                 kubernetes.KubeContainerManager,
                 config)
 
-    def test__get(self):
+    def test__get_and_delete(self):
         """
-        Verify _get makes proper HTTP requests.
+        Verify _get and _delete makes proper HTTP requests.
         """
-        self.instance.con = mock.MagicMock()
-        self.instance._get('test')
-        self.instance.con.get.assert_called_once_with(
-            CONTAINER_MGR_CONFIG['server_url'] + 'api/v1/test')
+        for method in ('get', 'delete'):
+            self.instance.con = mock.MagicMock()
+            method_callable = getattr(self.instance, '_' + method)
+            method_callable('test')
+            assertable_callable = getattr(self.instance.con, method)
+            assertable_callable.assert_called_once_with(
+                CONTAINER_MGR_CONFIG['server_url'] + 'api/v1/test')
 
     def test__put_and__post(self):
         """
@@ -110,6 +113,18 @@ class TestKubeContainerManager(TestCase):
             self.instance.con.post.assert_called_once_with(
                 CONTAINER_MGR_CONFIG['server_url'] + 'api/v1/nodes',
                 data=mock.ANY)
+
+    def test_remove_node(self):
+        """
+        Verify remove_node makes the proper remote call and returns the proper result.
+        """
+        for code, result in ((200, True), (404, False)):
+            self.instance.con = mock.MagicMock()
+            self.instance.con.delete.return_value = mock.MagicMock(
+                status_code=code)
+            self.assertEquals(result, self.instance.remove_node('test'))
+            self.instance.con.delete.assert_called_once_with(
+                CONTAINER_MGR_CONFIG['server_url'] + 'api/v1/nodes/test')
 
     def test_get_host_status(self):
         """
