@@ -255,8 +255,6 @@ class KubeContainerManager(ContainerManagerBase):
 
         :param name: The name of the node.
         :type name: str
-        :returns: True if registered
-        :rtype: bool
         :raises: commissaire.containermgr.ContainerManagerError
         """
         part = '/nodes/{0}'.format(name)
