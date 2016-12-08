@@ -209,8 +209,6 @@ class KubeContainerManager(ContainerManagerBase):
 
         :param name: The name of the node.
         :type name: str
-        :returns: True if registered
-        :rtype: bool
         :raises: commissaire.containermgr.ContainerManagerError
         """
         part = '/nodes'
@@ -224,14 +222,13 @@ class KubeContainerManager(ContainerManagerBase):
         }
 
         resp = self._post(part, payload)
-        if resp.status_code == 201:
-            return True
-        error_msg = (
-            'Non-created response when trying to register the node {}. '
-            'Status: "{}", Data: "{}"'.format(
-                name, resp.status_code, resp.text))
-        self.logger.error(error_msg)
-        raise ContainerManagerError(error_msg, resp.status_code)
+        if resp.status_code != 201:
+            error_msg = (
+                'Non-created response when trying to register the node {}. '
+                'Status: "{}", Data: "{}"'.format(
+                    name, resp.status_code, resp.text))
+            self.logger.error(error_msg)
+            raise ContainerManagerError(error_msg, resp.status_code)
 
     def remove_node(self, name):
         """
