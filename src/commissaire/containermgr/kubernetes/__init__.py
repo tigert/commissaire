@@ -276,21 +276,22 @@ class KubeContainerManager(ContainerManagerBase):
         :param raw: If the result should be limited to its own status.
         :type raw: bool
         :returns: The response back from kubernetes.
-        :rtype: requests.Response
+        :rtype: dict
         :raises: commissaire.containermgr.ContainerManagerError
         """
         part = '/nodes/{}'.format(name)
         resp = self._get(part)
-        if resp.status_code == 200:
-            data = resp.json()
-            if raw:
-                data = data['status']
-            return data
-        error_msg = (
-            'No status for {} returned. Status: {}'.format(
-                name, resp.status_code))
-        self.logger.error(error_msg)
-        raise ContainerManagerError(error_msg, resp.status_code)
+        if resp.status_code != 200:
+            error_msg = (
+                'No status for {} returned. Status: {}'.format(
+                    name, resp.status_code))
+            self.logger.error(error_msg)
+            raise ContainerManagerError(error_msg, resp.status_code)
+
+        data = resp.json()
+        if raw:
+            data = data['status']
+        return data
 
 
 #: Common name for the class
