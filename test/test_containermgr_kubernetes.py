@@ -96,7 +96,7 @@ class TestKubeContainerManager(TestCase):
         """
         self.instance.con = mock.MagicMock()
         self.instance.con.get.return_value = mock.MagicMock(status_code=200)
-        self.assertEquals(True, self.instance.node_registered('test'))
+        self.assertEquals(None, self.instance.node_registered('test'))
         self.instance.con.get.assert_called_once_with(
             CONTAINER_MGR_CONFIG['server_url'] + 'api/v1/nodes/test')
 

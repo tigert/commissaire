@@ -266,13 +266,11 @@ class KubeContainerManager(ContainerManagerBase):
         """
         part = '/nodes/{0}'.format(name)
         resp = self._get(part)
-        # TODO: Stronger checking would be better
-        if resp.status_code == 200:
-            return True
-        error_msg = 'Node {} is not registered. Status: {}'.format(
-            name, resp.status_code)
-        self.logger.error(error_msg)
-        raise ContainerManagerError(error_msg, resp.status_code)
+        if resp.status_code != 200:
+            error_msg = 'Node {} is not registered. Status: {}'.format(
+                name, resp.status_code)
+            self.logger.error(error_msg)
+            raise ContainerManagerError(error_msg, resp.status_code)
 
     def get_node_status(self, name, raw=False):
         """
