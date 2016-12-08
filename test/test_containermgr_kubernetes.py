@@ -147,7 +147,7 @@ class TestKubeContainerManager(TestCase):
         self.instance.con = mock.MagicMock()
         self.instance.con.delete.return_value = mock.MagicMock(
             status_code=200)
-        self.assertEquals(True, self.instance.remove_node('test'))
+        self.assertEquals(None, self.instance.remove_node('test'))
         self.instance.con.delete.assert_called_once_with(
             CONTAINER_MGR_CONFIG['server_url'] + 'api/v1/nodes/test')
 
