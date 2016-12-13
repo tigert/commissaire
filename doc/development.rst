@@ -44,11 +44,11 @@ vagrant box will attempt to mount them over SSH.
 
 
 To run the vagrant development environment make sure you have a support
-virtualization system as well as vagrant installed and execute ``vagrant up``.
+virtualization system as well as vagrant installed and execute ``./tools/vagrantup``.
 
 .. warning::
 
-   The initial run updates the systems and can take some time. To provision faster try ``vagrant up --parallel servers fedora-cloud fedora-atomic && vagrant up commissaire``.
+   If you want to use the ``vagrant`` command directly note that you will have to follow the same start up process used in ``./tools/vagrantup``
 
 .. note::
 
@@ -66,11 +66,11 @@ virtualization system as well as vagrant installed and execute ``vagrant up``.
 ==================== =============== ================ =========
 Server               IP              OS               AutoStart
 ==================== =============== ================ =========
-Servers (etcd/redis) 192.168.152.101 Fedora Cloud 24  Yes
-Fedora Node          192.168.152.110 Fedora Cloud 24  Yes
-Fedora Atomic Node   192.168.152.111 Fedora Atomic 24 Yes
-Commissaire          192.168.152.100 Fedora Cloud 24  Yes
-Kubernetes           192.168.152.102 Fedora Cloud 24  No
+Servers (etcd/redis) 192.168.152.101 Fedora Cloud 25  Yes
+Fedora Node          192.168.152.110 Fedora Cloud 25  Yes
+Fedora Atomic Node   192.168.152.111 Fedora Atomic 25 Yes
+Commissaire          192.168.152.100 Fedora Cloud 25  No
+Kubernetes           192.168.152.102 Fedora Cloud 25  No
 ==================== =============== ================ =========
 
 For more information see the `Vagrant site <https://www.vagrantup.com>`_.
