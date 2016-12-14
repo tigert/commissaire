@@ -52,12 +52,11 @@ virtualization system as well as vagrant installed and execute ``./tools/vagrant
 
 .. note::
 
-   The ``fedora-atomic`` host currently requires a manual work-around to
-   mount the shared folder at ``/home/vagrant/sync``.  After the box is up
-   the first time, run ``vagrant ssh fedora-atomic`` to log into the virtual
-   machine, then run ``sudo rpm-ostree install fuse-sshfs``.  Exit back out
-   to the host machine and restart the virtual machine with ``vagrant reload
-   fedora-atomic``.
+   If you decide to use the ``vagrant`` command directly, the ``fedora-atomic`` host will
+   require a manual work-around to mount the shared folder at ``/home/vagrant/sync``.
+   After the box is up the first time, run ``vagrant ssh fedora-atomic`` to log into the
+   virtual machine, then run ``sudo rpm-ostree install fuse-sshfs``.  Exit back out to
+   the host machine and restart the virtual machine with ``vagrant reload fedora-atomic``.
 
 .. note::
 
