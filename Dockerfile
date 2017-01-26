@@ -1,4 +1,4 @@
-FROM fedora
+FROM fedora:25
 MAINTAINER Red Hat, Inc. <container-tools@redhat.com>
 
 ENV MHM_RELEASE v0.1.0
