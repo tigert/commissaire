@@ -37,11 +37,11 @@ Define Exposed methods
 ``CommissaireService`` uses the ``on_{{ method }}`` convention for exposing methods
 to remote callers. If you wanted to expose a method as ``ping`` you would
 define a method on your service called ``on_ping``. ``on_{{ method }}``'s
-expect to take 1 or more arguments where the 1 required argument is ``message``
+expect to take 1 or more arguments where the first required argument is ``message``
 which is the message itself in the case the method needs extra information.
 
 To return results back to the caller via the message bus simply use the ``return``
-statement as if it was a normal method. If there is an error ``raise`` the
+statement as if it was a normal method. If there is an error, ``raise`` the
 proper exception. These will be transformed into proper messages and returned
 to the message bus and passed to the caller.
 

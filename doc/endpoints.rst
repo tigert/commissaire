@@ -21,7 +21,7 @@ Cluster
 
 .. versionchanged:: 0.1.0
 
-   ``type`` has been removed in favor of ``cluster_manager``.
+   ``type`` has been removed in favor of ``container_manager``.
 
 GET
 ```
@@ -33,7 +33,7 @@ Retrieve the status of the cluster.
        "name": string,
        "status" string,
        "network": string,
-       "cluster_manager": str,
+       "container_manager": str,
        "hosts": {
            "total": int,
            "available": int,
@@ -51,7 +51,7 @@ Example
        "name": "mycluster",
        "status": "ok",
        "network": "default",
-       "cluster_manager": "prod_openshift",
+       "container_manager": "prod_openshift",
        "hosts": {
            "total": 3,
            "available": 2,
@@ -70,7 +70,7 @@ Creates a new cluster.
 .. code-block:: javascript
 
     {
-        "cluster_manager": string // (Optional) Name of the cluster manager to use
+        "container_manager": string // (Optional) Name of the container manager to use
         "network": string     // The name of the network
     }
 
@@ -81,7 +81,7 @@ Example
 .. code-block:: javascript
 
    {
-       "cluster_manager": "prod_openshift",
+       "container_manager": "prod_openshift",
        "network": "default"
    }
 
