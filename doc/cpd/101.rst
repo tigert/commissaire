@@ -1,0 +1,150 @@
+CPD-101: Key Storage Encryption
+===============================
+
+Metadata
+--------
+
+* CPD Version: 1
+* Status: Open
+
+Description
+-----------
+Today we are holding keys the same way that secrets are used in some container managers.
+Instead of holding keys in base64 and assuming that the ``Storage`` instance is used
+only for Commissaire, we could encrypt the keys to add another layer of safety.
+
+Rationale
+---------
+The likelihood of having a ``Storage`` system that is used only for Commissaire seems
+low. More than likely the same instance will be used for other applications as well.
+By adding encryption to the keys we mitigate could mitigate access from those with
+access to data dumps and storage system access.
+
+
+Design
+------
+The server(s) would house a GnuPG configuration and keys allowing them to encrypt
+and decrypt data. The servers would either need to have the same key across all
+instances or each server would need a copy of other services public keys.
+
+
+Additional Libraries
+~~~~~~~~~~~~~~~~~~~~
+To facilitate easy access to GnuPG, `python-gnupg <http://pythonhosted.org/gnupg/>`_ would
+need to be installed. This library utilizes ``gpg`` directly so it would need to be
+available as well.
+
+
+HTTP Server Updates
+~~~~~~~~~~~~~~~~~~~
+While ``StorageService`` seems like it would be the proper place to add the
+encryption/decryption it's important to remember the key would then be transfered
+back over the wire before it made it to the http server and, ultimately, back to
+the user. Instead, adding the encryption/decryption at the REST level would keep
+the key encrypted as long as possible.
+
+The HTTP Server would need to handle decrypting the key back into a base64 encoded
+string before handing it back to the authenticated requestor.
+
+Example Code
+````````````
+These are examples and likely will not work without modification.
+
+**Encryption Class**
+
+.. code-block:: python
+
+   import base64
+   import gnupg
+
+
+   class Encryption:
+
+       def __init__(self, passphrase, verbose=False):
+           self.__passphrase = passphrase
+           self._encryptor = gnupg.GPG(
+               homedir='/etc/commissaire/gpg/'
+               verbose=verbose)
+
+       def _b64decode(self, data):
+           try:
+               return base64.decodebytes(data)
+           except base64.binascii.Error:
+               # Not base64 encoded
+               return data
+
+       def _b64encode(self, data):
+           return base64.encodebytes(data)
+
+       def encrypt(self, data, fingerprint:
+           # Decode the input and encode the result
+           return self._b64encode(self._encryptor.encrypt(
+               self._b64decode(data), fingerprint))
+
+       def decrypt(self, data):
+           return self._encryptor.decrypt(
+               self._b64decode(data), self.__passphrase)
+
+
+**Saving New Host**
+
+.. code-block:: python
+
+   # Created at a higher level in the code
+   enc = Encryption('secretProbablyFromConfigFile')
+   # ...
+   message['params']['ssh_priv_key'] = enc.encrypt(
+       message['params']['ssh_priv_key'])
+   host = bus.storage.save(models.Host.new(**message['params']))
+
+
+**Returning HostCreds To Requestor**
+
+.. code-block:: python
+
+   # Created at a higher level in the code
+   enc = Encryption('secretProbablyFromConfigFile')
+   # ...
+   host = bus.storage.get_host(address)
+   creds = {
+       'remote_user': host.remote_user,
+       'ssh_priv_key': enc.decrypt(host.ssh_priv_key)
+   }
+   return create_jsonrpc_response(message['id'], creds)
+
+
+Migration Tool
+~~~~~~~~~~~~~~
+A migration tool to encrypt keys that are currently stored would need to be
+created.
+
+
+Future Considerations
+---------------------
+When a full role based authorization control system is added it may make sense to tie keys
+to users. The http server could then provide an encrypted key back to the requestor and allow
+them to decrypt it locally (or ``commctl`` to handle decryption).
+
+Checklist
+---------
+* breaks API backward compatibility
+* breaks user interaction backward compatibility
+* **requires new or replaces current libraries**
+
+User Story
+----------
+In order to increase security
+I would like encryption to be added to key storage
+so that those with access to the data do not get direct access to keys.
+
+Acceptance Criteria
+-------------------
+* Verify that a design document is created
+* Verify the document is reviewed by at least one other developer
+* Verify implementation card(s) are created
+
+References
+----------
+* `Kubernetes Secrets <https://kubernetes.io/docs/user-guide/secrets/>`_
+* `GnuPG <https://www.gnupg.org/>`_
+* `python-gnupg <http://pythonhosted.org/gnupg/>`_
