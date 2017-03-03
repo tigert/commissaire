@@ -17,8 +17,8 @@ Rationale
 ---------
 The likelihood of having a ``Storage`` system that is used only for Commissaire seems
 low. More than likely the same instance will be used for other applications as well.
-By adding encryption to the keys we mitigate could mitigate access from those with
-access to data dumps and storage system access.
+By adding encryption to the keys we could mitigate access from those with access to
+data dumps and storage system access.
 
 
 Design
