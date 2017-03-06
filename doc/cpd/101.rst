@@ -23,9 +23,12 @@ data dumps and storage system access.
 
 Design
 ------
-The server(s) would house a GnuPG configuration and keys allowing them to encrypt
-and decrypt data. The servers would either need to have the same key across all
-instances or each server would need a copy of other services public keys.
+The ``StorageService`` instances would house a GnuPG configuration and keys allowing
+them to encrypt and decrypt data. The instances would need to do one of the following:
+
+* all have the same key
+* each instance have a copy of other instances public keys
+* use the bus to request the encryption key if the local key store is empty
 
 
 Additional Libraries
@@ -35,19 +38,21 @@ need to be installed. This library utilizes ``gpg`` directly so it would need to
 available as well.
 
 
-HTTP Server Updates
-~~~~~~~~~~~~~~~~~~~
-While ``StorageService`` seems like it would be the proper place to add the
-encryption/decryption it's important to remember the key would then be transfered
-back over the wire before it made it to the http server and, ultimately, back to
-the user. Instead, adding the encryption/decryption at the REST level would keep
-the key encrypted as long as possible.
+StorageService Updates
+~~~~~~~~~~~~~~~~~~~~~~
+The StorageService would need to handle decrypting the key back into a base64 encoded
+string before handing it back to the requesting service.
 
-The HTTP Server would need to handle decrypting the key back into a base64 encoded
-string before handing it back to the authenticated requestor.
+
+Model Updates
+~~~~~~~~~~~~~
+A way to denote encrypted data in a model will need to be added. This will allow the
+``StorageService`` to note when a field needs decrypting. This would likely be an
+item set in the ``_attribute_map``.
+
 
 Example Code
-````````````
+~~~~~~~~~~~~
 These are examples and likely will not work without modification.
 
 **Encryption Class**
@@ -76,7 +81,7 @@ These are examples and likely will not work without modification.
        def _b64encode(self, data):
            return base64.encodebytes(data)
 
-       def encrypt(self, data, fingerprint:
+       def encrypt(self, data, fingerprint):
            # Decode the input and encode the result
            return self._b64encode(self._encryptor.encrypt(
                self._b64decode(data), fingerprint))
@@ -86,44 +91,42 @@ These are examples and likely will not work without modification.
                self._b64decode(data), self.__passphrase)
 
 
-**Saving New Host**
+**Host Model Example**
 
 .. code-block:: python
 
-   # Created at a higher level in the code
-   enc = Encryption('secretProbablyFromConfigFile')
-   # ...
-   message['params']['ssh_priv_key'] = enc.encrypt(
-       message['params']['ssh_priv_key'])
-   host = bus.storage.save(models.Host.new(**message['params']))
+   class Host(Model):
+       """
+       Representation of a Host.
+       """
+       _json_type = dict
+       _attribute_map = {
+           'address': {'type': str},
+           'status': {'type': str},
+           'os': {'type': str},
+           'cpus': {'type': int},
+           'memory': {'type': int},
+           'space': {'type': int},
+           'last_check': {'type': str},
+           'ssh_priv_key': {'type': str, 'encrypted': True},
+           'remote_user': {'type': str},
+           'source': {'type': str},
+       }
+       ...
 
 
-**Returning HostCreds To Requestor**
+Documentation Updates
+~~~~~~~~~~~~~~~~~~~~~
+Documentation would need to be updated to clarify the following:
 
-.. code-block:: python
-
-   # Created at a higher level in the code
-   enc = Encryption('secretProbablyFromConfigFile')
-   # ...
-   host = bus.storage.get_host(address)
-   creds = {
-       'remote_user': host.remote_user,
-       'ssh_priv_key': enc.decrypt(host.ssh_priv_key)
-   }
-   return create_jsonrpc_response(message['id'], creds)
-
+* The bus component will need to be considered secure
+* Some bus backends will need to use stunnel (and include an example)
+* Information about the GnuPG key store
 
 Migration Tool
 ~~~~~~~~~~~~~~
 A migration tool to encrypt keys that are currently stored would need to be
 created.
-
-
-Future Considerations
----------------------
-When a full role based authorization control system is added it may make sense to tie keys
-to users. The http server could then provide an encrypted key back to the requestor and allow
-them to decrypt it locally (or ``commctl`` to handle decryption).
 
 Checklist
 ---------
@@ -148,3 +151,4 @@ References
 * `Kubernetes Secrets <https://kubernetes.io/docs/user-guide/secrets/>`_
 * `GnuPG <https://www.gnupg.org/>`_
 * `python-gnupg <http://pythonhosted.org/gnupg/>`_
+* `Kombu Connection <http://docs.celeryproject.org/projects/kombu/en/latest/reference/kombu.connection.html>`_
