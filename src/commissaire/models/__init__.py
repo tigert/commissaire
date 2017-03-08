@@ -168,7 +168,7 @@ class Model(object):
                 data[key] = getattr(self, key)
         return data
 
-    def to_json(self, expose=None):
+    def to_json(self, expose=[]):
         """
         Returns a JSON representation of this model.
 
@@ -178,14 +178,13 @@ class Model(object):
         :rtype: str
         """
         struct = self._struct_for_json(secure=True)
-        if expose:
-            for key in expose:
-                value = getattr(self, key)
-                if value:
-                    struct[key] = value
+        for key in expose:
+            value = getattr(self, key)
+            if value:
+                struct[key] = value
         return json.dumps(struct)
 
-    def to_json_safe(self, expose=None):
+    def to_json_safe(self, expose=[]):
         """
         Returns a JSON representation of this model, omitting all hidden
         attributes.  Use this when preparing data for display to users.
@@ -196,11 +195,10 @@ class Model(object):
         :rtype: str
         """
         struct = self._struct_for_json(secure=False)
-        if expose:
-            for key in expose:
-                value = getattr(self, key)
-                if value:
-                    struct[key] = value
+        for key in expose:
+            value = getattr(self, key)
+            if value:
+                struct[key] = value
         return json.dumps(struct)
 
     def to_dict(self):
