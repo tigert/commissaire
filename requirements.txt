@@ -3,3 +3,4 @@ sphinx_rtd_theme #license=BSD
 python-etcd #license=MIT
 requests #license=ASLv2.0
 kombu #license=BSD
+gnupg #license=GPLv3+
