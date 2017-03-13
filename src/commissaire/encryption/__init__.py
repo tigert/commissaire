@@ -147,9 +147,9 @@ class GNUPGEncryption(EncryptionBase):
         self.fingerprint = None
         for keydata in self._encryptor.list_keys():
             for uid in keydata['uids']:
-                if uid.split(' ')[0] == name:
+                if uid.split(' ')[0].lower() == name.lower():
                     self.fingerprint = keydata['fingerprint']
-                break
+                    break
 
         # Else make one
         if not self.fingerprint:
