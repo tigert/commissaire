@@ -11,117 +11,182 @@ Description
 -----------
 Today we are holding keys the same way that secrets are used in some container managers.
 Instead of holding keys in base64 and assuming that the ``Storage`` instance is used
-only for Commissaire, we could encrypt the keys to add another layer of safety.
+only for Commissaire, we could encrypt keys, credentials and other secrets to add
+another layer of safety.
 
 Rationale
 ---------
 The likelihood of having a ``Storage`` system that is used only for Commissaire seems
 low. More than likely the same instance will be used for other applications as well.
-By adding encryption to the keys we could mitigate access from those with access to
-data dumps and storage system access.
+By adding encryption to sensitive data we could mitigate access from those with direct
+access to data dumps and storage systems.
 
 
 Design
 ------
-The ``StorageService`` instances would house a GnuPG configuration and keys allowing
-them to encrypt and decrypt data. The instances would need to do one of the following:
+The ``StorageService`` would be updated to know what data would be backed through Custodia
+rather than the other storage handler(s).
 
-* all have the same key
-* each instance have a copy of other instances public keys
-* use the bus to request the encryption key if the local key store is empty
+- Install and setup of a Custodia instance would be part of a Commissaire install and configuration.
+- Custodia would be configured to use an etcd backend.
+- Custodia would be configured to use unix socket communication.
+- Commissaire's Storage Service would be updated to store credentials and ssh keys via Custodia.
+
+
+::
+
+                     +-----------------+
+     Data Request    |                 |
+   +---------------->+ Storage Service |
+                     |                 | +---------------+
+                     +-------+---------+ |               |
+                             |           |   Custodia    |
+                             |           |               |
+                             |           +---------------+
+                             v                 ^
+                     +-------+-------+      Yes|
+                     |               |         |
+                     |    Secret?    +---------+
+                     |               |         |
+                     +---------------+       No|
+                                               |
+                                               |
+                                               v
+                                         +-----------------------+
+                                         |                       |
+                                         |   Storage Handler(s)  |
+                                         |                       |
+                                         +-----------------------+
+
 
 
 Additional Libraries
 ~~~~~~~~~~~~~~~~~~~~
-To facilitate easy access to GnuPG, `python-gnupg <http://pythonhosted.org/gnupg/>`_ would
-need to be installed. This library utilizes ``gpg`` directly so it would need to be
-available as well.
+`Custodia <https://custodia.readthedocs.io/en/latest/>`_ would be a required subsystem.
+Custodia would be installed as part of Commissaire.
 
 
 StorageService Updates
 ~~~~~~~~~~~~~~~~~~~~~~
-The StorageService would need to handle decrypting the key back into a base64 encoded
-string before handing it back to the requesting service.
+The StorageService would need to to know when to use Custodia versus the configured
+``StorageHandler``(s). It would look at the ``_secrets`` attribute on the instance and,
+if set to ``True`` would use the secrets handler.
+
+The secrets handler would be automatically added to the ``StorageHandlerManager`` and
+would require no special configuration by the operator.
 
 
 Model Updates
 ~~~~~~~~~~~~~
-A way to denote encrypted data in a model will need to be added. This will allow the
-``StorageService`` to note when a field needs decrypting. This would likely be an
-item set in the ``_attribute_map``.
+Sensitive items would be pulled out from the ``Host`` model into it's own model. For simplicity,
+the model should be named after the REST endpoint that has traditionally returned the data: ``HostCreds``.
+The models would match based on their primary keys: ``address``.
+
+The ``Model`` class would also gain a new attribute to denote the model is secret. A secret model would
+denote ``_secrets = True``.
 
 
 Example Code
 ~~~~~~~~~~~~
 These are examples and likely will not work without modification.
 
-**Encryption Class**
+**Model Updates**
 
 .. code-block:: python
 
-   import base64
-   import gnupg
+    class Model(object):
+        """
+        Parent class for models.
+        """
+
+        _json_type = None
+        #: Dict of attribute_name->{type, regex}. Regex is optional.
+        _attribute_map = {}
+        #: Attributes which should only be shown if the render is 'secure'
+        _hidden_attributes = ()
+        #: The primary way of looking up an instance
+        _primary_key = None
+        #: Defaults to use for attributes when calling new()
+        _attribute_defaults = {}
+        #: The attribute name which stores items if this is a list type
+        _list_attr = None
+        #: The class for items which will be stored in the list attribute
+        _list_class = None
+        #: If the model must be saved via the secrets storage rather than general StorageHandler(s)
+        _secret = False
+
+        # ...
 
 
-   class Encryption:
-
-       def __init__(self, passphrase, verbose=False):
-           self.__passphrase = passphrase
-           self._encryptor = gnupg.GPG(
-               homedir='/etc/commissaire/gpg/'
-               verbose=verbose)
-
-       def _b64decode(self, data):
-           try:
-               return base64.decodebytes(data)
-           except base64.binascii.Error:
-               # Not base64 encoded
-               return data
-
-       def _b64encode(self, data):
-           return base64.encodebytes(data)
-
-       def encrypt(self, data, fingerprint):
-           # Decode the input and encode the result
-           return self._b64encode(self._encryptor.encrypt(
-               self._b64decode(data), fingerprint))
-
-       def decrypt(self, data):
-           return self._encryptor.decrypt(
-               self._b64decode(data), self.__passphrase)
+    class Host(Model):
+        """
+        Representation of a Host.
+        """
+        _json_type = dict
+        _attribute_map = {
+            'address': {'type': str},
+            'status': {'type': str},
+            'os': {'type': str},
+            'cpus': {'type': int},
+            'memory': {'type': int},
+            'space': {'type': int},
+            'last_check': {'type': str},
+            'source': {'type': str},
+        }
+        _attribute_defaults = {
+            'address': '', 'status': '', 'os': '', 'cpus': 0,
+            'memory': 0, 'space': 0, 'last_check': '', 'source': ''}
+        _primary_key = 'address'
 
 
-**Host Model Example**
+    class HostCreds(Model):
+        """
+        Representation of Host credentials.
+        """
+        _json_type = dict
+        _secret = True
+        _attribute_map = {
+            'address': {'type': str},
+            'ssh_priv_key': {'type': str},
+            'remote_user': {'type': str},
+        }
+        _attribute_defaults = {
+            'ssh_priv_key': '',
+            'remote_user': 'root',
+        }
+        _primary_key = 'address'
+
+**StorageHandlerManager Updates**
 
 .. code-block:: python
 
-   class Host(Model):
-       """
-       Representation of a Host.
-       """
-       _json_type = dict
-       _attribute_map = {
-           'address': {'type': str},
-           'status': {'type': str},
-           'os': {'type': str},
-           'cpus': {'type': int},
-           'memory': {'type': int},
-           'space': {'type': int},
-           'last_check': {'type': str},
-           'ssh_priv_key': {'type': str, 'encrypted': True},
-           'remote_user': {'type': str},
-           'source': {'type': str},
-       }
-       ...
+    def _get_handler(self, model):
+        """
+        Looks up, and if necessary instantiates, a StoreHandler instance
+        for the given model.  If the model stores secrets the secrets
+        handler is used. Raises KeyError if no handler is registered
+        for that type of model.
+        """
+        if model._secret:
+            handler = self._handlers.get('secret')  # Just an example
+        else:
+            handler = self._handlers.get(type(model))
+
+        if handler is None:
+            # Let this raise a KeyError if the registry lookup fails.
+            handler_type, config, model_types = self._registry[type(model)]
+            handler = handler_type(config)
+            self._handlers.update({mt: handler for mt in model_types})
+        return handler
 
 
 Documentation Updates
 ~~~~~~~~~~~~~~~~~~~~~
 Documentation would need to be updated to clarify the following:
 
-* The bus component will need to be considered secure
-* Some bus backends will need to use stunnel (and include an example)
-* Information about the GnuPG key store
+* Sensitive data is stored encrypted
+* How to access the secrets store
+* Information pointing to Custodia
 
 Migration Tool
 ~~~~~~~~~~~~~~
@@ -137,18 +202,16 @@ Checklist
 User Story
 ----------
 In order to increase security
-I would like encryption to be added to key storage
-so that those with access to the data do not get direct access to keys.
+I would like encryption to be added to secrets storage
+so that those with access to the data do not get direct access to sensitive data.
 
 Acceptance Criteria
 -------------------
-* Verify that a design document is created
-* Verify the document is reviewed by at least one other developer
-* Verify implementation card(s) are created
+* Verify a card for installing custodia is created
+* Verify a card is created for updating commissaire-service
+* Verify a card is created for adding/updating models and updating model usage
 
 References
 ----------
 * `Kubernetes Secrets <https://kubernetes.io/docs/user-guide/secrets/>`_
-* `GnuPG <https://www.gnupg.org/>`_
-* `python-gnupg <http://pythonhosted.org/gnupg/>`_
-* `Kombu Connection <http://docs.celeryproject.org/projects/kombu/en/latest/reference/kombu.connection.html>`_
+* `Custodia <https://custodia.readthedocs.io/en/latest/>`_
