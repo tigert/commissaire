@@ -186,6 +186,8 @@ Documentation would need to be updated to clarify the following:
 
 * Sensitive data is stored encrypted
 * How to access the secrets store
+* The bus component will need to be considered secure
+* Some bus backends will need to use stunnel (and include an example)
 * Information pointing to Custodia
 
 Migration Tool
