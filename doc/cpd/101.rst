@@ -76,7 +76,12 @@ The StorageService would need to to know when to use Custodia versus the configu
 if set to ``True`` would use the secrets handler.
 
 The secrets handler would be automatically added to the ``StorageHandlerManager`` and
-would require no special configuration by the operator.
+would require no special configuration by the operator. However, additional configuration
+keys **would** be added so that the secrets handler could authenticate to the secrets
+store.
+
+Lastly, the ``StorageService`` would need to have a way to query for the secrets api endpoint.
+There are many possible designs for this. The decision is left up to the implementation.
 
 New HTTP Handler
 ~~~~~~~~~~~~~~~~
@@ -95,8 +100,20 @@ Sensitive items would be pulled out from the ``Host`` model into it's own model.
 the model should be named after the REST endpoint that has traditionally returned the data: ``HostCreds``.
 The models would match based on their primary keys: ``address``.
 
-The ``Model`` class would also gain a new attribute to denote the model is secret. A secret model would
-denote ``_secrets = True``.
+The ``Model`` would add a subclass which would be used to house secrets. This new subclass would
+be called ``SecretModel`` and would always have it's contents stored in the secrets store.
+
+::
+
+          Model
+            |
+     +------+------+
+     |             |
+     |        SecretModel
+     |             |
+    Host       HostCreds
+
+
 
 
 Example Code
@@ -107,29 +124,11 @@ These are examples and likely will not work without modification.
 
 .. code-block:: python
 
-    class Model(object):
+    class SecretModel(Model):
         """
-        Parent class for models.
+        Parent class for all models which must be stored in the secrets store.
         """
-
-        _json_type = None
-        #: Dict of attribute_name->{type, regex}. Regex is optional.
-        _attribute_map = {}
-        #: Attributes which should only be shown if the render is 'secure'
-        _hidden_attributes = ()
-        #: The primary way of looking up an instance
-        _primary_key = None
-        #: Defaults to use for attributes when calling new()
-        _attribute_defaults = {}
-        #: The attribute name which stores items if this is a list type
-        _list_attr = None
-        #: The class for items which will be stored in the list attribute
-        _list_class = None
-        #: If the model must be saved via the secrets storage rather than general StorageHandler(s)
-        _secret = False
-
-        # ...
-
+        pass
 
     class Host(Model):
         """
@@ -152,12 +151,11 @@ These are examples and likely will not work without modification.
         _primary_key = 'address'
 
 
-    class HostCreds(Model):
+    class HostCreds(SecretModel):
         """
         Representation of Host credentials.
         """
         _json_type = dict
-        _secret = True
         _attribute_map = {
             'address': {'type': str},
             'ssh_priv_key': {'type': str},
@@ -180,7 +178,7 @@ These are examples and likely will not work without modification.
         handler is used. Raises KeyError if no handler is registered
         for that type of model.
         """
-        if model._secret:
+        if issubclass(model.__class__, models.SecretModel):
             handler = self._handlers.get('secret')  # Just an example
         else:
             handler = self._handlers.get(type(model))
@@ -228,7 +226,6 @@ These are examples and likely will not work without modification.
             # Use unix socket to proxy
         except:
             # ...
-
 
 **AuthenticationManager Update**
 
@@ -310,7 +307,7 @@ Example Configuration
     autogen_master_key = true
 
     [auth:creds]
-    handler = SimpleHeaderAuth
+    handler = SimpleAuthKeys
     id_header = CUSTODIA_AUTH_ID
     key_header = CUSTODIA_KEY_ID
     store = etcd
@@ -340,8 +337,7 @@ Documentation would need to be updated to clarify the following:
 
 Migration Tool
 ~~~~~~~~~~~~~~
-A migration tool to encrypt keys that are currently stored would need to be
-created.
+A migration tool to push secrets into the secrets store.
 
 Future Considerations
 ~~~~~~~~~~~~~~~~~~~~~
@@ -362,9 +358,11 @@ so that those with access to the data do not get direct access to sensitive data
 
 Acceptance Criteria
 -------------------
-* Verify a card for installing custodia is created
-* Verify a card is created for updating commissaire-service
+* Verify a card for installing Custodia is created
 * Verify a card is created for adding/updating models and updating model usage
+* Verify a card is created for updating commissaire-service
+* Verify a card is created for updating commissaire-http
+* Verify a card is created for allowing commissaire-storage-service to query for the http endpoint
 
 References
 ----------
