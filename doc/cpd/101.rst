@@ -30,6 +30,9 @@ rather than the other storage handler(s).
 - Install and setup of a Custodia instance would be part of a Commissaire install and configuration.
 - Custodia would be configured to use an etcd backend.
 - Custodia would be configured to use unix socket communication.
+- Commissaire would proxy access to Custodia and enforce it's authentication
+- Commissaire would generate an api id and api key for StorageService access
+- StorageService would have an api id and api key in it's config to access Custodia
 - Commissaire's Storage Service would be updated to store credentials and ssh keys via Custodia.
 
 
@@ -37,15 +40,15 @@ rather than the other storage handler(s).
 
                      +-----------------+
      Data Request    |                 |
-   +---------------->+ Storage Service |
-                     |                 | +---------------+
-                     +-------+---------+ |               |
-                             |           |   Custodia    |
-                             |           |               |
+   +---------------->+ Storage Service | +---------------+
+                     |                 | |               |
+                     +-------+---------+ |   Custodia    |
+                             |           |   (Proxied)   |
+                             |           | (API KEY/ID)  |
                              |           +---------------+
                              v                 ^
-                     +-------+-------+      Yes|
-                     |               |         |
+                     +-------+-------+         |
+                     |               |      Yes|
                      |    Secret?    +---------+
                      |               |         |
                      +---------------+       No|
@@ -75,6 +78,16 @@ if set to ``True`` would use the secrets handler.
 The secrets handler would be automatically added to the ``StorageHandlerManager`` and
 would require no special configuration by the operator.
 
+New HTTP Handler
+~~~~~~~~~~~~~~~~
+A new handler called ``secrets`` could be added. This would proxy requests back to the
+Custodia instance.
+
+AuthenticationManager Updates
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+A way to allow for proxied authentication will be required. This can be done by providing
+a list of self authenticated endpoints which bypasses the authentication stack and sends
+the request directly through to the handler.
 
 Model Updates
 ~~~~~~~~~~~~~
@@ -179,6 +192,141 @@ These are examples and likely will not work without modification.
             self._handlers.update({mt: handler for mt in model_types})
         return handler
 
+**Secrets Handler**
+
+.. code-block:: python
+
+    def _register(router):
+        """
+        Sets up routing for secrets.
+
+        :param router: Router instance to attach to.
+        :type router: commissaire_http.router.Router
+        :returns: The router.
+        :rtype: commissaire_http.router.Router
+        """
+        from commissaire_http.constants import ROUTING_RX_PARAMS
+
+        router.connect(
+            R'/api/v0/secrets/',
+            controller=proxy_secrets,
+            conditions={'method': ['GET', 'PUT', 'POST', 'DELETE']})
+
+    @BasicHandler
+    def proxy_secrets(message, bus):
+        """
+        Proxy secrets back to Custodia
+
+        :param message: jsonrpc message structure.
+        :type message: dict
+        :param bus: Bus instance.
+        :type bus: commissaire_http.bus.Bus
+        :returns: A jsonrpc structure.
+        :rtype: dict
+        """
+        try:
+            # Use unix socket to proxy
+        except:
+            # ...
+
+
+**AuthenticationManager Update**
+
+.. code-block:: python
+
+    def __init__(
+            self, app, authenticators=[], self_auths=['/api/v0/secrets']):
+        """
+        Initializes a new AuthenticationManager instance.
+
+        :param app: A WSGI app to wrap.
+        :type app: instance
+        :param authenticators: Configured Authenticator instances to utilize.
+        :type authenticators: list
+        :param self_auths: List of endpoints which have their own authentication
+        :type self_auths: list
+        """
+        self._app = app
+        self.authenticators = authenticators
+        self.self_auths = self_auths
+
+    def __call__(self, environ, start_response):
+        """
+        ...
+        """
+        # If the endpoint self authenticates then pass directly
+        # to the handler
+        if environ['PATH'] in self.self_auths:
+            return self._app(environ, start_response)
+        # ...
+
+
+Example Configuration
+~~~~~~~~~~~~~~~~~~~~~
+
+**StorageService**
+
+.. code-block:: javascript
+
+    {
+        "custodia_api_id": "storage_service",
+        "custodia_api_key": "$API_KEY",
+        "storage_handlers": [
+          {
+            "name": "etcd",
+            "server_url": "http://127.0.0.1:2379",
+            "models": ["*"]
+          }
+        ],
+        "debug": false
+    }
+
+
+**Custodia**
+
+.. code-block:: ini
+
+    [DEFAULT]
+    libdir = /var/lib/commissaire/custodia/
+    logdir = /var/log/commissaire/
+    rundir = /var/run
+
+    [global]
+    debug = false
+    server_socket = ${rundir}/custodia.sock
+    auditlog = ${logdir}/custodia-audit.log
+
+    [store:etcd]
+    etcd_server = {{ etcd_server }}
+    etcd_port = {{ etcd_port }}
+    handler = EtcdStore
+    namespace = custodia_commissaire_data
+
+    [store:encrypted_etcd]
+    handler = EncryptedOverlay
+    backing_store = etcd
+    master_key = ${libdir}/secrets.key
+    master_enctype = A256CBC-HS512
+    autogen_master_key = true
+
+    [auth:creds]
+    handler = SimpleHeaderAuth
+    id_header = CUSTODIA_AUTH_ID
+    key_header = CUSTODIA_KEY_ID
+    store = etcd
+    store_namespace = custodia_commissaire_api
+
+    [authz:paths]
+    handler = SimplePathAuthz
+    paths = /. /secrets
+
+    [/]
+    handler = Root
+
+    [/secrets]
+    handler = Secrets
+    store = encrypted_etcd
+
 
 Documentation Updates
 ~~~~~~~~~~~~~~~~~~~~~
@@ -194,6 +342,11 @@ Migration Tool
 ~~~~~~~~~~~~~~
 A migration tool to encrypt keys that are currently stored would need to be
 created.
+
+Future Considerations
+~~~~~~~~~~~~~~~~~~~~~
+* Commissaire could use Custodia for authentication/authorization
+* Commissaire could provide a backend for Custodia to use it as authentication
 
 Checklist
 ---------
